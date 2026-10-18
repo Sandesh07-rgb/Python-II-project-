@@ -1,0 +1,163 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+
+# Pre-loaded Emergency & Healthcare Data
+directory_data = [
+    ["101", "National Emergency Helpline", "Helpline", "All India", "112", "24x7 Open"],
+    ["102", "Govt Ambulance Service", "Ambulance", "Citywide", "108", "24x7 Open"],
+    ["103", "City Care Hospital", "Hospital", "Civil Lines", "0712-2551234", "24x7 Open"],
+    ["104", "Sunrise Family Clinic", "Clinic", "Dharampeth", "9876543210", "9 AM - 9 PM"],
+    ["105", "LifeLine Medicos", "Pharmacy", "Sitabuldi", "9123456780", "24x7 Open"],
+    ["106", "Red Cross Blood Bank", "Blood Bank", "Medical Square", "0712-2745678", "24x7 Open"],
+    ["107", "Apex Heart Hospital", "Hospital", "Ramdaspeth", "0712-2449999", "24x7 Open"]
+]
+
+
+# ---------------- PROGRAM FUNCTIONS ---------------- #
+def show_all():
+    """Displays all records in the table."""
+    for item in tree.get_children():
+        tree.delete(item)
+    for row in directory_data:
+        tree.insert("", tk.END, values=row)
+
+
+def add_record():
+    """Takes input from boxes and adds a new row to the table."""
+    rec_id = entry_id.get().strip()
+    name = entry_name.get().strip()
+    cat = combo_category.get()
+    area = entry_area.get().strip()
+    phone = entry_phone.get().strip()
+    routine = combo_routine.get()
+
+    if rec_id == "" or name == "" or phone == "":
+        messagebox.showwarning("Input Error", "Please enter ID, Name, and Phone Number!")
+        return
+
+    new_row = [rec_id, name, cat, area, phone, routine]
+    directory_data.append(new_row)
+    tree.insert("", tk.END, values=new_row)
+    clear_boxes()
+    messagebox.showinfo("Success", "New record added successfully!")
+
+
+def search_record():
+    """Filters the table based on Area, Category, or Name."""
+    query = entry_search.get().strip().lower()
+    for item in tree.get_children():
+        tree.delete(item)
+
+    for row in directory_data:
+        if query in row[1].lower() or query in row[2].lower() or query in row[3].lower():
+            tree.insert("", tk.END, values=row)
+
+
+def delete_record():
+    """Deletes the selected row from the table."""
+    selected = tree.selection()
+    if not selected:
+        messagebox.showwarning("Select Row", "Please select a record from the table to delete!")
+        return
+
+    values = tree.item(selected[0], "values")
+    for row in directory_data:
+        if row[0] == values[0]:
+            directory_data.remove(row)
+            break
+
+    tree.delete(selected[0])
+    messagebox.showinfo("Deleted", "Selected record removed!")
+
+
+def clear_boxes():
+    """Clears all input fields."""
+    entry_id.delete(0, tk.END)
+    entry_name.delete(0, tk.END)
+    combo_category.current(0)
+    entry_area.delete(0, tk.END)
+    entry_phone.delete(0, tk.END)
+    combo_routine.current(0)
+
+
+# ---------------- GUI WINDOW SETUP ---------------- #
+root = tk.Tk()
+root.title("Emergency Contact & Nearby Healthcare Directory")
+root.geometry("920x520")
+root.configure(bg="#eef2f3")
+
+# Heading Banner
+heading = tk.Label(
+    root,
+    text="EMERGENCY CONTACT & NEARBY HEALTHCARE DIRECTORY\nEmergency: 112  |  Ambulance: 108  |  Police: 100  |  Fire: 101",
+    font=("Arial", 13, "bold"),
+    bg="#c0392b",
+    fg="white",
+    pady=10
+)
+heading.pack(fill=tk.X)
+
+# Left Side: Input Form
+left_frame = tk.LabelFrame(root, text=" Enter Details (Input) ", font=("Arial", 10, "bold"), bg="white", padx=12, pady=10)
+left_frame.place(x=15, y=75, width=280, height=430)
+
+tk.Label(left_frame, text="Record ID:", bg="white", font=("Arial", 9, "bold")).pack(anchor="w")
+entry_id = tk.Entry(left_frame, width=32, bd=2)
+entry_id.pack(pady=3)
+
+tk.Label(left_frame, text="Facility / Contact Name:", bg="white", font=("Arial", 9, "bold")).pack(anchor="w")
+entry_name = tk.Entry(left_frame, width=32, bd=2)
+entry_name.pack(pady=3)
+
+tk.Label(left_frame, text="Category:", bg="white", font=("Arial", 9, "bold")).pack(anchor="w")
+combo_category = ttk.Combobox(left_frame, values=["Hospital", "Clinic", "Pharmacy", "Ambulance", "Blood Bank", "Helpline"], state="readonly", width=29)
+combo_category.pack(pady=3)
+combo_category.current(0)
+
+tk.Label(left_frame, text="Nearby Area:", bg="white", font=("Arial", 9, "bold")).pack(anchor="w")
+entry_area = tk.Entry(left_frame, width=32, bd=2)
+entry_area.pack(pady=3)
+
+tk.Label(left_frame, text="Phone Number:", bg="white", font=("Arial", 9, "bold")).pack(anchor="w")
+entry_phone = tk.Entry(left_frame, width=32, bd=2)
+entry_phone.pack(pady=3)
+
+tk.Label(left_frame, text="Routine / Timing:", bg="white", font=("Arial", 9, "bold")).pack(anchor="w")
+combo_routine = ttk.Combobox(left_frame, values=["24x7 Open", "9 AM - 9 PM", "8 AM - 10 PM", "10 AM - 6 PM"], state="readonly", width=29)
+combo_routine.pack(pady=3)
+combo_routine.current(0)
+
+# Buttons
+tk.Button(left_frame, text="Add Record", command=add_record, bg="#27ae60", fg="white", font=("Arial", 9, "bold"), width=26).pack(pady=(12, 4))
+tk.Button(left_frame, text="Delete Selected", command=delete_record, bg="#c0392b", fg="white", font=("Arial", 9, "bold"), width=26).pack(pady=4)
+tk.Button(left_frame, text="Clear Inputs", command=clear_boxes, bg="#7f8c8d", fg="white", font=("Arial", 9, "bold"), width=26).pack(pady=4)
+
+# Right Side: Search & Output Table
+right_frame = tk.Frame(root, bg="#eef2f3")
+right_frame.place(x=310, y=75, width=595, height=430)
+
+# Search Bar
+search_box = tk.Frame(right_frame, bg="white", pady=6, padx=8, bd=1, relief=tk.SOLID)
+search_box.pack(fill=tk.X, pady=(0, 8))
+
+tk.Label(search_box, text="Search Area / Category:", bg="white", font=("Arial", 9, "bold")).pack(side=tk.LEFT, padx=4)
+entry_search = tk.Entry(search_box, width=22, bd=2)
+entry_search.pack(side=tk.LEFT, padx=4)
+
+tk.Button(search_box, text="Search", command=search_record, bg="#2980b9", fg="white", font=("Arial", 9, "bold"), width=8).pack(side=tk.LEFT, padx=4)
+tk.Button(search_box, text="Show All", command=show_all, bg="#7f8c8d", fg="white", font=("Arial", 9, "bold"), width=8).pack(side=tk.LEFT, padx=4)
+
+# Output Table
+cols = ("ID", "Name", "Category", "Area", "Phone", "Routine")
+tree = ttk.Treeview(right_frame, columns=cols, show="headings")
+
+for col, width in [("ID", 45), ("Name", 155), ("Category", 85), ("Area", 100), ("Phone", 100), ("Routine", 90)]:
+    tree.heading(col, text=col)
+    tree.column(col, width=width)
+
+tree.pack(fill=tk.BOTH, expand=True)
+
+# Load initial data
+show_all()
+
+root.mainloop()
